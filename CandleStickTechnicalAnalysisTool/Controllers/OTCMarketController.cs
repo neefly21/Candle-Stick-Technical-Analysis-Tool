@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using CandleStickTechnicalAnalysisTool.Core;
 using CandleStickTechnicalAnalysisTool.Core.Models;
 using CandleStickTechnicalAnalysisTool.Core.Models.PatternScanning;
+using CandleStickTechnicalAnalysisTool.Helpers;
 using CsvHelper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using TicTacTec.TA.Library;
+using static TicTacTec.TA.Library.Core;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -50,9 +52,7 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
             return jsonString;
         }
 
-        private HttpClient GetHttpClient()
-            => _client == null ? new HttpClient() : _client;
-
+        
 
         // GET: api/<OTCMarketController>
         [HttpGet]
@@ -162,6 +162,13 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
             return JsonConvert.DeserializeObject<List<Record>>(json);
         }
 
+        private async Task<List<Record>> GetPortfolio()
+        {
+            string contentRootPath = _env.ContentRootPath;
+            string json = System.IO.File.ReadAllText(contentRootPath + "/MarketData/NoahsPortfolio.json");
+            return JsonConvert.DeserializeObject<List<Record>>(json);
+        }
+
         //Retrieves all current company names and tickers listed on the OTC Market
         // GET api/<OTCMarketController>/5
         [HttpGet("/companiesDirectory")]
@@ -194,58 +201,73 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
             return JsonConvert.SerializeObject(companyRecords).ToString();
         }
 
-        
-
-        [HttpGet("/checkTickerForPattern/{ticker}")]
-        public async Task<List<PatternScanResults>> GetPatternScanResults(CandleStickPattern patternToScanFor)
+        [HttpGet("/getListOfPatterns")]
+        public async Task<string> GetListOfPatternsAsync()
         {
-            var records = await GetListOfOTCCompanyRecords();
+            var patterns = Enum.GetNames(typeof(CandleStickPattern));
+            var patternDescriptions = HelperMethods.GetListOfDescription<CandleStickPattern>();
+            List<PatternObj> patternObjs = new List<PatternObj>();
+            var i = 0;
+            foreach (var pattern in patterns)
+            {
+                var currentPattern = patternDescriptions[i];
+                var patternObj = PatternObj.Create(pattern, currentPattern);
+                patternObjs.Add(patternObj);
+                i++;
+            }
+
+
+            return JsonConvert.SerializeObject(patternObjs);
+        }
+
+        [HttpPost("/checkTickerForPattern")]
+        public async Task<string> GetPatternScanResults([FromBody]CandleStickPattern patternToScanFor)
+        {
+            var records = await GetPortfolio();
+            List<CompanyPatternResults> companyPatternResults = new List<CompanyPatternResults>();
 
             foreach (var company in records)
             {
                 var tickerHistoricJSONString = await OutputFileContentAsJSONString(company.Symbol);
                 List<CandleStick> candleSticks = JsonConvert.DeserializeObject<List<CandleStick>>(tickerHistoricJSONString);
                 var patternScanResultsList = await GetPatternScanResultsAsync(candleSticks, patternToScanFor);
-
-                var 
-
+                var companyPatternResult = CompanyPatternResults.Create(patternToScanFor, company, patternScanResultsList, (bool)patternScanResultsList.Any(x => x.IsPatternTriggered == true));
+                companyPatternResults.Add(companyPatternResult);
             }
 
-            try
-            {
-                
-
-            }
-            catch (Exception ex)
-            { 
-            
-            }
-
-            return new List<PatternScanResults>();
+            return JsonConvert.SerializeObject(companyPatternResults).ToString();
         }
 
         private async Task<List<PatternScanResults>> GetPatternScanResultsAsync(List<CandleStick> candleSticks, CandleStickPattern patternToScanFor)
         {
             List<PatternScanResults> patternScanResults = new List<PatternScanResults>();
 
-            int[] patternIndexLoc = new int[candleSticks.Count() - 1];
-            int out1, out2;
-
-            var returnCode = TicTacTec.TA.Library.Core.CdlMorningStar(1, candleSticks.Count() - 1, candleSticks.Select(x => (float)x.Open).ToArray(),
-                candleSticks.Select(x => (float)x.High).ToArray(), candleSticks.Select(x => (float)x.Low).ToArray(), candleSticks.Select(x => (float)x.Close).ToArray(), 0, out out1, out out2, patternIndexLoc);
+            int[] patternIndexLoc = new int[candleSticks.Count()];
+            int out1 = 0;
+            int out2 = 0;
 
             object[] parameters = new object[] { 1, candleSticks.Count() - 1, candleSticks.Select(x => (float)x.Open).ToArray(),
-                candleSticks.Select(x => (float)x.High).ToArray(), candleSticks.Select(x => (float)x.Low).ToArray(), candleSticks.Select(x => (float)x.Close).ToArray(), 0, null, null, patternIndexLoc};
-
+                candleSticks.Select(x => (float)x.High).ToArray(), candleSticks.Select(x => (float)x.Low).ToArray(), candleSticks.Select(x => (float)x.Close).ToArray(), 0, out1, out2, patternIndexLoc};
+            
             Type thisType = typeof(TicTacTec.TA.Library.Core);
-            MethodInfo theMethod = thisType.GetMethod(patternToScanFor.ToString());
-            var result = theMethod.Invoke(this, parameters);
-            bool methodCallSucceed = (bool)result;
-
-            if (methodCallSucceed)
+            
+            try
             {
-                out1 = (int)parameters[7];
-                out2 = (int)parameters[8];
+                MethodInfo theMethod = thisType.GetMethod("CdlMorningStar");
+                var result = theMethod.Invoke(this, parameters);
+                
+            }
+            catch (AmbiguousMatchException)
+            {
+                MethodInfo[] methods = thisType.GetMethods();
+
+                var result = methods[0].Invoke(this, parameters);
+
+                if ((RetCode)result ==  RetCode.Success)
+                {
+                    out1 = (int)parameters[7];
+                    out2 = (int)parameters[8];
+                }
             }
 
             //Create PatternScanResults
@@ -254,17 +276,28 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
             {
                 var isPatternTriggered = patternIndexLoc[iterator] != 0 ? true : false;
                 var patternScanResult = PatternScanResults.Create(candle, isPatternTriggered);
-                patternScanResults.Add(patternScanResult);
+
+                if(isPatternTriggered)
+                    patternScanResults.Add(patternScanResult);
+
                 iterator++;
             }
 
             return patternScanResults;
         }
+
+        private HttpClient GetHttpClient()
+                => _client == null ? new HttpClient() : _client;
+
     }
 
-    public class PatternScanRequest
+    public class PatternObj
     {
-        public CandleStickPattern CandleStickPattern { get; set; }
+        public string PatternName { get; set; }
+        public string PatternDisplayName { get; set; }
 
+        public static PatternObj Create(string patternName, string patternDisplayName)
+            => new PatternObj { PatternDisplayName = patternDisplayName, PatternName = patternName};
     }
+
 }

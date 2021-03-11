@@ -1,0 +1,22 @@
+[
+    {
+      "CompanyName": "Apple, Inc.",
+      "Symbol": "AAPL",
+      "TierCode": "NA"
+    },
+    {
+        "CompanyName": "Amazon, Inc.",
+        "Symbol": "AMZN",
+        "TierCode": "NA"
+    },
+    {
+        "CompanyName": "Bitcoin -> USD",
+        "Symbol": "BTC-USD",
+        "TierCode": "CP"
+    },
+    {
+        "CompanyName": "Tesla",
+        "Symbol": "TSLA",
+        "TierCode": "CP"
+    }
+]

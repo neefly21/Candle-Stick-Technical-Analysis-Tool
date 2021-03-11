@@ -8,187 +8,187 @@ namespace CandleStickTechnicalAnalysisTool.Core
     public enum CandleStickPattern
     {
         [Description("Two Crows")]
-        CDL2CROWS,
-
+        Cdl2Crows,
+        
         [Description("Three Black Crows")]
-        CDL3BLACKCROWS,
-
+        Cdl3BlackCrows,
+        
         [Description("Three Inside Up/Down")]
-        CDL3INSIDE,
-
+        Cdl3Inside,
+        
         [Description("Three-Line Strike")]
-        CDL3LINESTRIKE,
-
+        Cdl3LineStrike,
+        
         [Description("Three Outside Up/Down")]
-        CDL3OUTSIDE,
-
+        Cdl3Outside,
+        
         [Description("Three Stars In The South")]
-        CDL3STARSINSOUTH,
-
+        Cdl3StarsInSouth,
+        
         [Description("Three Advancing White Soldiers")]
-        CDL3WHITESOLDIERS,
-
+        Cdl3WhiteSoldiers,
+        
         [Description("Abandoned Baby")]
-        CDLABANDONEDBABY,
-
+        CdlAbandonedBaby,
+        
         [Description("Advance Block")]
-        CDLADVANCEBLOCK,
-
+        CdlAdvanceBlock,
+        
         [Description("Belt-hold")]
-        CDLBELTHOLD,
-
+        CdlBeltHold,
+        
         [Description("Breakaway")]
-        CDLBREAKAWAY,
-
+        CdlBreakaway,
+        
         [Description("Closing Marubozu")]
-        CDLCLOSINGMARUBOZU,
-
+        CdlClosingMarubozu,
+        
         [Description("Concealing Baby Swallow")]
-        CDLCONCEALBABYSWALL,
-
+        CdlConcealBabysWall,
+        
         [Description("Counterattack")]
-        CDLCOUNTERATTACK,
-
+        CdlCounterAttack,
+        
         [Description("Dark Cloud Cover")]
-        CDLDARKCLOUDCOVER,
-
+        CdlDarkCloudCover,
+        
         [Description("Doji")]
-        CDLDOJI,
-
+        CdlDoji,
+        
         [Description("Doji Star")]
-        CDLDOJISTAR,
-
+        CdlDojiStar,
+        
         [Description("Dragonfly Doji")]
-        CDLDRAGONFLYDOJI,
-
+        CdlDragonflyDoji,
+        
         [Description("Engulfing Pattern")]
-        CDLENGULFING,
-
+        CdlEngulfing,
+        
         [Description("Evening Doji Star")]
-        CDLEVENINGDOJISTAR,
-
+        CdlEveningDojiStar,
+        
         [Description("Evening Star")]
-        CDLEVENINGSTAR,
-
+        CdlEveningStar,
+        
         [Description("Up/Down-gap side-by-side white lines")]
-        CDLGAPSIDESIDEWHITE,
-
+        CdlGapSideSideWhite,
+        
         [Description("Gravestone Doji")]
-        CDLGRAVESTONEDOJI,
-
+        CdlGravestoneDoji,
+        
         [Description("Hammer")]
-        CDLHAMMER,
-
+        CdlHammer,
+        
         [Description("Hanging Man")]
-        CDLHANGINGMAN,
-
+        CdlHangingMan,
+        
         [Description("Harami Pattern")]
-        CDLHARAMI,
-
+        CdlHarami,
+        
         [Description("Harami Cross Pattern")]
-        CDLHARAMICROSS,
-
+        CdlHaramiCross,
+        
         [Description("High-Wave Candle")]
-        CDLHIGHWAVE,
-
+        CdlHignWave,
+        
         [Description("Hikkake Pattern")]
-        CDLHIKKAKE,
-
+        CdlHikkake,
+        
         [Description("Modified Hikkake Pattern")]
-        CDLHIKKAKEMOD,
-
+        CdlHikkakeMod,
+        
         [Description("Homing Pigeon")]
-        CDLHOMINGPIGEON,
-
+        CdlHomingPigeon,
+        
         [Description("Identical Three Crows")]
-        CDLIDENTICAL3CROWS,
-
+        CdlIdentical3Crows,
+        
         [Description("In-Neck Pattern")]
-        CDLINNECK,
-
+        CdlInNeck,
+        
         [Description("Inverted Hammer")]
-        CDLINVERTEDHAMMER,
-
+        CdlInvertedHammer,
+        
         [Description("Kicking")]
-        CDLKICKING,
-
+        CdlKicking,
+        
         [Description("Kicking - bull/bear determined by the longer marubozu")]
-        CDLKICKINGBYLENGTH,
-
+        CdlKickingByLength,
+        
         [Description("Ladder Bottom")]
-        CDLLADDERBOTTOM,
-
+        CdlLadderBottom,
+        
         [Description("Long Legged Doji")]
-        CDLLONGLEGGEDDOJI,
-
+        CdlLongLeggedDoji,
+        
         [Description("Long Line Candle")]
-        CDLLONGLINE,
-
+        CdlLongLine,
+        
         [Description("Marubozu")]
-        CDLMARUBOZU,
-
+        CdlMarubozu,
+        
         [Description("Matching Low")]
-        CDLMATCHINGLOW,
-
+        CdlMatchingLow,
+        
         [Description("Mat Hold")]
-        CDLMATHOLD,
-
+        CdlMatHold,
+        
         [Description("Morning Doji Star")]
-        CDLMORNINGDOJISTAR,
-
+        CdlMorningDojiStar,
+        
         [Description("Morning Star")]
-        CDLMORNINGSTAR,
-
+        CdlMorningStar,
+        
         [Description("On-Neck Pattern")]
-        CDLONNECK,
-
+        CdlOnNeck,
+        
         [Description("Piercing Pattern")]
-        CDLPIERCING,
-
+        CdlPiercing,
+        
         [Description("Rickshaw Man")]
-        CDLRICKSHAWMAN,
-
+        CdlRickshawMan,
+        
         [Description("Rising/Falling Three Methods")]
-        CDLRISEFALL3METHODS,
-
+        CdlRiseFall3Methods,
+        
         [Description("Separating Lines")]
-        CDLSEPARATINGLINES,
-
+        CdlSeperatingLines,
+        
         [Description("Shooting Star")]
-        CDLSHOOTINGSTAR,
-
+        CdlShootingStar,
+        
         [Description("Short Line Candle")]
-        CDLSHORTLINE,
-
+        CdlShortLine,
+        
         [Description("Spinning Top")]
-        CDLSPINNINGTOP,
-
+        CdlSpinningTop,
+        
         [Description("Stalled Pattern")]
-        CDLSTALLEDPATTERN,
-
+        CdlStalledPattern,
+        
         [Description("Stick Sandwich")]
-        CDLSTICKSANDWICH,
-
+        CdlStickSandwhich,
+        
         [Description("Takuri (Dragonfly Doji with very long lower shadow)")]
-        CDLTAKURI,
-
+        CdlTakuri,
+        
         [Description("Tasuki Gap")]
-        CDLTASUKIGAP,
-
+        CdlTasukiGap,
+        
         [Description("Thrusting Pattern")]
-        CDLTHRUSTING,
-
+        CdlThrusting,
+        
         [Description("Tristar Pattern")]
-        CDLTRISTAR,
-
+        CdlTristar,
+        
         [Description("Unique 3 River")]
-        CDLUNIQUE3RIVER,
-
+        CdlUnique3River,
+        
         [Description("Upside Gap Two Crows")]
-        CDLUPSIDEGAP2CROWS,
-
+        CdlUpsideGap2Crows,
+        
         [Description("Upside/Downside Gap Three Methods")]
-        CDLXSIDEGAP3METHODS
+        CdlXSideGap3Methods
 
     }
 }

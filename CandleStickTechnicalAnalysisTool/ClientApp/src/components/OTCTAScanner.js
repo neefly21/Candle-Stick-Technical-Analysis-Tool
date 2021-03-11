@@ -7,11 +7,41 @@ export class OTCTAScanner extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { candleStickData: [[]], loading: true, tempTicker: "AAPL" };
+        this.state = { candleStickData: [[]], loading: true, tempTicker: "AAPL", patternOptions: [], selectedPattern: ""};
 
         this.handleTickerInputChange = this.handleTickerInputChange.bind(this);
+        this.handleDropDownOnChange = this.handleDropDownOnChange.bind(this);
         this.debounce = this.debounce.bind(this);
         this.getCandleStickData(this.state.tempTicker);
+        this.getPatternListData();
+    }
+
+    handleDropDownOnChange(dropDown)
+    {
+        this.setState({selectedPattern: dropDown});
+
+        $.ajax({
+            method: "POST",
+            url: "/checkTickerForPattern",
+            data: { "patternToScanFor": dropDown }
+          })
+        .done(function( msg ) {
+            alert( "Data Saved: " + msg );
+        });
+    }
+
+    async getPatternListData()
+    {
+        var urlForRawOptionsList = "https://localhost:44322/getListOfPatterns";
+        var response = await fetch(urlForRawOptionsList);
+        const data = await response.json();
+        var selectMenuData = [];
+
+        for (const [key, value] of Object.entries(data))
+            if(value !== null || value !== undefined)
+                selectMenuData.push(value);
+
+        this.setState({patternOptions: selectMenuData});
     }
 
     async getCandleStickData(ticker) {
@@ -97,29 +127,41 @@ export class OTCTAScanner extends Component {
     debouncedGetNewCandleStickData = this.debounce((text) => {
         if(text.length > 2)
             this.getCandleStickData(text);
-      }, 250);
+    }, 250);
 
     render() {
 
         return (
             <div>
-                <input type="text" value={this.state.tempTicker} placeholder={"Example: AAPL..."} onChange={(e) => this.handleTickerInputChange(e.target.value)}></input>
-                {/* <select>
+                
+                <select select={this.state.selectedPattern} onChange={(e) => this.handleDropDownOnChange(e.target.value)}>
                     {this.renderPatternOptionsToScanFor()}
-                </select> */}
+                </select>
+                
+            </div>
+        );
+    }
+
+    renderTickerInputAndChart()
+    {
+        return (
+            <div>
+                <input type="text" value={this.state.tempTicker} placeholder={"Example: AAPL..."} onChange={(e) => this.handleTickerInputChange(e.target.value)}></input>
                 <div style={{ display: 'flex', maxWidth: 900 }}>
                     {this.state.tempTicker.length > 2 ? this.renderCandleStickChart() : null}
                 </div>
             </div>
         );
+
     }
 
     renderPatternOptionsToScanFor()
     {
-        console.log(constants);
-        return (
-            <option>Test</option>
-        );
+        let itemList = this.state.patternOptions.map((item,index)=>{
+            return <option key={index} value={item.PatternName}>{item.PatternDisplayName}</option>
+        })
+        
+        return itemList;
     }
 
     debounce(func, wait, immediate) {
@@ -136,4 +178,22 @@ export class OTCTAScanner extends Component {
             if (callNow) func.apply(context, args);
         };
     };
+
+    async postData(url = '', data = {}) {
+        // Default options are marked with *
+        const response = await fetch(url, {
+          method: 'POST', // *GET, POST, PUT, DELETE, etc.
+          mode: 'cors', // no-cors, *cors, same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+          body: JSON.stringify(data) // body data type must match "Content-Type" header
+        });
+        return response.json(); // parses JSON response into native JavaScript objects
+      }
 }
