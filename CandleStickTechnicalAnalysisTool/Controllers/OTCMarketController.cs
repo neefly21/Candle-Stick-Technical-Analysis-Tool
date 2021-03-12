@@ -220,19 +220,30 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
             return JsonConvert.SerializeObject(patternObjs);
         }
 
-        [HttpPost("/checkTickerForPattern")]
-        public async Task<string> GetPatternScanResults([FromBody]CandleStickPattern patternToScanFor)
+        [HttpPost("/api/RunPatternDetection")]
+        public async Task<string> FindPatternScanResults([FromBody] ScanRequest scanRequest)
         {
             var records = await GetPortfolio();
             List<CompanyPatternResults> companyPatternResults = new List<CompanyPatternResults>();
+
+            var patternEnum = Enum.Parse<CandleStickPattern>(scanRequest.Pattern);
+            //var patternEnum = scanRequest.Pattern;
 
             foreach (var company in records)
             {
                 var tickerHistoricJSONString = await OutputFileContentAsJSONString(company.Symbol);
                 List<CandleStick> candleSticks = JsonConvert.DeserializeObject<List<CandleStick>>(tickerHistoricJSONString);
-                var patternScanResultsList = await GetPatternScanResultsAsync(candleSticks, patternToScanFor);
-                var companyPatternResult = CompanyPatternResults.Create(patternToScanFor, company, patternScanResultsList, (bool)patternScanResultsList.Any(x => x.IsPatternTriggered == true));
-                companyPatternResults.Add(companyPatternResult);
+                var patternScanResultsList = await GetPatternScanResultsAsync(candleSticks, patternEnum);
+                var companyPatternResult = CompanyPatternResults.Create(patternEnum, company, patternScanResultsList, candleSticks, (bool)patternScanResultsList.Any(x => x.IsPatternTriggered == true));
+                
+                
+
+                var minDateFrequency = DateTime.Now.AddDays(-int.Parse(scanRequest.MinimumFrequency));
+                var blah1 = (bool)patternScanResultsList.Any(x => x.IsPatternTriggered == true);
+                var blah2 = patternScanResultsList.Any(y => DateTime.Compare(y.CandleStick.DateTime, minDateFrequency) > 0);
+                
+                if (blah1 && blah2)
+                    companyPatternResults.Add(companyPatternResult);
             }
 
             return JsonConvert.SerializeObject(companyPatternResults).ToString();
@@ -289,6 +300,12 @@ namespace CandleStickTechnicalAnalysisTool.Controllers
         private HttpClient GetHttpClient()
                 => _client == null ? new HttpClient() : _client;
 
+    }
+
+    public class ScanRequest
+    {
+        public string Pattern { get; set; }
+        public string MinimumFrequency { get; set; }
     }
 
     public class PatternObj

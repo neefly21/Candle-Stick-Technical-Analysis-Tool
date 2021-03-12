@@ -2,16 +2,21 @@
 import Chart from "react-google-charts";
 import moment from 'moment';
 import constants from '../constants.txt';
+import * as $ from 'jquery'
+
 
 export class OTCTAScanner extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { candleStickData: [[]], loading: true, tempTicker: "AAPL", patternOptions: [], selectedPattern: ""};
+        this.state = { candleStickData: [[]], loading: true, tempTicker: "AAPL", patternOptions: [], selectedPattern: "", scanChartingData: [], minimumFrequency: 15};
 
         this.handleTickerInputChange = this.handleTickerInputChange.bind(this);
         this.handleDropDownOnChange = this.handleDropDownOnChange.bind(this);
         this.debounce = this.debounce.bind(this);
+        this.postPatternRequest = this.postPatternRequest.bind(this);
+        this.formatCandleStickDataForGoogleChart = this.formatCandleStickDataForGoogleChart.bind(this);
+        this.handleMinimumFrequencyChange = this.handleMinimumFrequencyChange.bind(this);
         this.getCandleStickData(this.state.tempTicker);
         this.getPatternListData();
     }
@@ -19,15 +24,6 @@ export class OTCTAScanner extends Component {
     handleDropDownOnChange(dropDown)
     {
         this.setState({selectedPattern: dropDown});
-
-        $.ajax({
-            method: "POST",
-            url: "/checkTickerForPattern",
-            data: { "patternToScanFor": dropDown }
-          })
-        .done(function( msg ) {
-            alert( "Data Saved: " + msg );
-        });
     }
 
     async getPatternListData()
@@ -48,8 +44,14 @@ export class OTCTAScanner extends Component {
 
         var response = await fetch("https://localhost:44322/getCandleStickChartByTicker/" + ticker);
         const data = await response.json();
+        var data2 = this.formatCandleStickDataForGoogleChart(data);
 
-        var data2 = [
+        this.setState({ candleStickData: data2, loading: false });
+    }
+
+    formatCandleStickDataForGoogleChart(data)
+    {
+        var formattedChartData = [
             ['date', 'low', 'open', 'close', 'high'],
         ];
 
@@ -66,20 +68,17 @@ export class OTCTAScanner extends Component {
                 (parseFloat(tempCandle[3]) === null || parseFloat(tempCandle[3]) === undefined))
                 continue;
 
-            data2.push(new Object([new Date(tempCandle[0]), parseFloat(tempCandle[4]), parseFloat(tempCandle[2]), parseFloat(tempCandle[5]), parseFloat(tempCandle[3])]));
+            formattedChartData.push(new Object([new Date(tempCandle[0]), parseFloat(tempCandle[4]), parseFloat(tempCandle[2]), parseFloat(tempCandle[5]), parseFloat(tempCandle[3])]));
         }
 
-        this.setState({ candleStickData: data2, loading: false });
+        return formattedChartData;
     }
 
-    renderCandleStickChart() {
-
-        var candleStickData = this.state.candleStickData;
-
+    renderCandleStickChart(candleStickData) {
         return (
             <Chart
                 width={'100%'}
-                height={350}
+                height={375}
                 chartType="CandlestickChart"
                 loader={<div>Loading Chart</div>}
                 data={candleStickData}
@@ -109,7 +108,7 @@ export class OTCTAScanner extends Component {
                         controlPosition: 'bottom',
                         controlWrapperParams: {
                             state: {
-                                range: { start: new Date(2020, 1, 9), end: new Date(2021, 3, 10) },
+                                range: { start: new Date(2020, 1, 9), end: new Date(2021, 3, 12) },
                             },
                         },
                     }
@@ -129,15 +128,84 @@ export class OTCTAScanner extends Component {
             this.getCandleStickData(text);
     }, 250);
 
+    handleMinimumFrequencyChange(minimumFrequency)
+    {
+        this.setState({ minimumFrequency: minimumFrequency });
+    }
+
+
+    postPatternRequest()
+    {
+        var that = this;
+        var data = {
+            "Pattern": this.state.selectedPattern,
+            "MinimumFrequency": this.state.minimumFrequency
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/api/RunPatternDetection",
+            data: JSON.stringify(data),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function( response ) {
+                console.log(response);
+                that.setState({scanChartingData: response})
+              }
+          });
+    }
+
+    renderCompanyPatternChartingResults(scanResults)
+    {
+        var data = this.formatCandleStickDataForGoogleChart(scanResults.CandleSticks);
+        
+        return(
+            <tr>
+                <td>{scanResults.CompanyRecord.CompanyName}</td>
+                <td>{scanResults.CompanyRecord.Symbol}</td>
+                <td>
+                    <div>
+                        {this.renderCandleStickChart(data)}
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
     render() {
+
+        var blah = this.state.scanChartingData;
+        var results = [];
+
+        for (const [key, value] of Object.entries(blah)) {
+            var temp = this.renderCompanyPatternChartingResults(value)
+            results.push(temp);
+        }
 
         return (
             <div>
-                
-                <select select={this.state.selectedPattern} onChange={(e) => this.handleDropDownOnChange(e.target.value)}>
-                    {this.renderPatternOptionsToScanFor()}
-                </select>
-                
+                <form method="POST">
+                        <select select={this.state.selectedPattern} onChange={(e) => this.handleDropDownOnChange(e.target.value)}>
+                            {this.renderPatternOptionsToScanFor()}
+                        </select>
+                        <input type="text" value={this.state.minimumFrequency} onChange={(e) => this.handleMinimumFrequencyChange(e.target.value)} />
+                        <input type="button" value="Scan" onClick={this.postPatternRequest}/>
+                </form>
+                <table>
+                    <colgroup>
+                        <col span="1" style={{width: "20%"}}/>
+                        <col span="1" style={{width: "20%"}}/>
+                        <col span="1" style={{width: "60%"}}/>
+                    </colgroup>
+                <tbody>
+                    <tr>
+                        <th>Company</th>
+                        <th>Ticker</th>
+                        <th style={{width: '5rem'}}></th>
+                    </tr>
+                    {results}
+                </tbody>
+                </table>
             </div>
         );
     }

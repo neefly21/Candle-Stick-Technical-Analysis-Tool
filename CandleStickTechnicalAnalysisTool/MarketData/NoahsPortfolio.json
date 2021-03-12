@@ -5,18 +5,23 @@
       "TierCode": "NA"
     },
     {
-        "CompanyName": "Amazon, Inc.",
-        "Symbol": "AMZN",
-        "TierCode": "NA"
+      "CompanyName": "Amazon, Inc.",
+      "Symbol": "AMZN",
+      "TierCode": "NA"
     },
     {
-        "CompanyName": "Bitcoin -> USD",
-        "Symbol": "BTC-USD",
-        "TierCode": "CP"
+      "CompanyName": "Bitcoin -> USD",
+      "Symbol": "BTC-USD",
+      "TierCode": "CP"
     },
     {
-        "CompanyName": "Tesla",
-        "Symbol": "TSLA",
-        "TierCode": "CP"
+      "CompanyName": "Tesla",
+      "Symbol": "TSLA",
+      "TierCode": "CP"
+    },
+    {
+      "CompanyName": "Gamestop",
+      "Symbol": "GME",
+      "TierCode": "CP"
     }
 ]
