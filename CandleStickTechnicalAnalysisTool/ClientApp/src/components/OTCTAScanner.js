@@ -42,7 +42,7 @@ export class OTCTAScanner extends Component {
 
     async getCandleStickData(ticker) {
 
-        var response = await fetch("https://localhost:44322/getCandleStickChartByTicker/" + ticker);
+        var response = await fetch("http://localhost:44322/getCandleStickChartByTicker/" + ticker);
         const data = await response.json();
         var data2 = this.formatCandleStickDataForGoogleChart(data);
 
